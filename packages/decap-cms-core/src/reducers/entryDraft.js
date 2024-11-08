@@ -39,6 +39,7 @@ const initialState = Map({
   fieldsMetaData: Map(),
   fieldsErrors: Map(),
   hasChanged: false,
+  lastChangedMilli: -1,
   key: '',
 });
 
@@ -52,6 +53,7 @@ function entryDraftReducer(state = Map(), action) {
         state.set('fieldsMetaData', Map());
         state.set('fieldsErrors', Map());
         state.set('hasChanged', false);
+        state.set('lastChangeMilli',-1)
         state.set('key', uuid());
       });
     case DRAFT_CREATE_EMPTY:
@@ -62,6 +64,7 @@ function entryDraftReducer(state = Map(), action) {
         state.set('fieldsMetaData', Map());
         state.set('fieldsErrors', Map());
         state.set('hasChanged', false);
+        state.set('lastChangeMilli',-1)
         state.set('key', uuid());
       });
     case DRAFT_CREATE_FROM_LOCAL_BACKUP:
@@ -75,6 +78,7 @@ function entryDraftReducer(state = Map(), action) {
         state.set('fieldsMetaData', Map());
         state.set('fieldsErrors', Map());
         state.set('hasChanged', true);
+        state.set('lastChangeMilli',Date.now())
         state.set('key', uuid());
       });
     case DRAFT_CREATE_DUPLICATE_FROM_ENTRY:
@@ -86,6 +90,7 @@ function entryDraftReducer(state = Map(), action) {
         state.set('fieldsMetaData', Map());
         state.set('fieldsErrors', Map());
         state.set('hasChanged', true);
+        state.set('lastChangeMilli',Date.now())
       });
     case DRAFT_DISCARD:
       return initialState;
@@ -97,6 +102,23 @@ function entryDraftReducer(state = Map(), action) {
       return state.set('localBackup', newState);
     }
     case DRAFT_CHANGE_FIELD: {
+      /* Runs on:
+          - Initial display
+          - Each character typed
+          - Switch from Rich Text to Markdown
+          - Adding an image to the text
+          - Editing fields in editor widgets
+          - Adding some font formatting to existing text
+          - Creating some font formatting, regardless
+         Does not run on:
+          - Uploading an image
+          - Closing the preview
+          - Changing scroll lock setting
+          - Pressing buttons in header
+          - Adjusting editor width
+          - Adjusting window size
+          - Some font formatting
+      */
       return state.withMutations(state => {
         const { field, value, metadata, entries, i18n } = action.payload;
         const name = field.get('name');
@@ -114,11 +136,20 @@ function entryDraftReducer(state = Map(), action) {
         state.mergeDeepIn(['fieldsMetaData'], fromJS(metadata));
         const newData = state.getIn(['entry', ...dataPath]);
         const newMeta = state.getIn(['entry', 'meta']);
-        state.set(
-          'hasChanged',
-          !entries.some(e => newData.equals(e.get(...dataPath))) ||
-            !entries.some(e => newMeta.equals(e.get('meta'))),
-        );
+        // alert("you have typed something")
+        /* Check if the current data is the same as the existing save
+           Check if the current meta is the same as the existing meta.
+           If either is different, the content has changed since the last save
+        */
+        const changedSinceSave = (!entries.some(e => newData.equals(e.get(...dataPath))) ||
+                                 !entries.some(e => newMeta.equals(e.get('meta'))));
+        state.set('hasChanged',changedSinceSave); // set HasChanged to true if it's changed
+        /* If content has changed since the last change:
+           set the lastChangedMilli state to the current datetime in milliseconds. 
+           Otherwise, set to -1.
+        */
+        state.set('lastChangedMilli', changedSinceSave ? Date.now() : -1) 
+        // alert(state.get('lastChangeMilli'))
       });
     }
     case DRAFT_VALIDATION_ERRORS:
