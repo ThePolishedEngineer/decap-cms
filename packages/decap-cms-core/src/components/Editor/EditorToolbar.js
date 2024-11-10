@@ -264,6 +264,7 @@ export class EditorToolbar extends React.Component {
     onPublishAndDuplicate: PropTypes.func.isRequired,
     user: PropTypes.object,
     hasChanged: PropTypes.bool,
+    lastChangedMilli: PropTypes.number,
     displayUrl: PropTypes.string,
     collection: ImmutablePropTypes.map.isRequired,
     hasWorkflow: PropTypes.bool,
@@ -629,6 +630,7 @@ export class EditorToolbar extends React.Component {
     const {
       user,
       hasChanged,
+      lastChangedMilli,
       displayUrl,
       collection,
       hasWorkflow,
@@ -648,7 +650,12 @@ export class EditorToolbar extends React.Component {
               })}
             </BackCollection>
             {hasChanged ? (
-              <BackStatusChanged>{t('editor.editorToolbar.unsavedChanges')}</BackStatusChanged>
+              <BackStatusChanged>{t('editor.editorToolbar.unsavedChanges')} 
+              <br></br> 
+              Last Edited: 
+              <br></br>
+              {new Date(lastChangedMilli).toLocaleString()}
+              </BackStatusChanged>
             ) : (
               <BackStatusUnchanged>{t('editor.editorToolbar.changesSaved')}</BackStatusUnchanged>
             )}

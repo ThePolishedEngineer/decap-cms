@@ -73,6 +73,7 @@ export class Editor extends React.Component {
       search: PropTypes.string,
     }),
     hasChanged: PropTypes.bool,
+    lastChangedMilli: PropTypes.number,
     t: PropTypes.func.isRequired,
     retrieveLocalBackup: PropTypes.func.isRequired,
     localBackup: ImmutablePropTypes.map,
@@ -342,6 +343,7 @@ export class Editor extends React.Component {
       changeDraftFieldValidation,
       user,
       hasChanged,
+      lastChangedMilli,
       displayUrl,
       hasWorkflow,
       useOpenAuthoring,
@@ -394,6 +396,7 @@ export class Editor extends React.Component {
         showDelete={this.props.showDelete}
         user={user}
         hasChanged={hasChanged}
+        lastChangedMilli={lastChangedMilli}
         displayUrl={displayUrl}
         hasWorkflow={hasWorkflow}
         useOpenAuthoring={useOpenAuthoring}
@@ -421,6 +424,7 @@ function mapStateToProps(state, ownProps) {
   const entry = newEntry ? null : selectEntry(state, collectionName, slug);
   const user = auth.user;
   const hasChanged = entryDraft.get('hasChanged');
+  const lastChangedMilli = entryDraft.get('lastChangedMilli');
   const displayUrl = config.display_url;
   const hasWorkflow = config.publish_mode === EDITORIAL_WORKFLOW;
   const useOpenAuthoring = globalUI.useOpenAuthoring;
@@ -454,6 +458,7 @@ function mapStateToProps(state, ownProps) {
     entry,
     user,
     hasChanged,
+    lastChangedMilli,
     displayUrl,
     hasWorkflow,
     useOpenAuthoring,

@@ -53,7 +53,7 @@ function entryDraftReducer(state = Map(), action) {
         state.set('fieldsMetaData', Map());
         state.set('fieldsErrors', Map());
         state.set('hasChanged', false);
-        state.set('lastChangeMilli',-1)
+        state.set('lastChangedMilli',-1)
         state.set('key', uuid());
       });
     case DRAFT_CREATE_EMPTY:
@@ -64,7 +64,7 @@ function entryDraftReducer(state = Map(), action) {
         state.set('fieldsMetaData', Map());
         state.set('fieldsErrors', Map());
         state.set('hasChanged', false);
-        state.set('lastChangeMilli',-1)
+        state.set('lastChangedMilli',-1)
         state.set('key', uuid());
       });
     case DRAFT_CREATE_FROM_LOCAL_BACKUP:
@@ -78,7 +78,7 @@ function entryDraftReducer(state = Map(), action) {
         state.set('fieldsMetaData', Map());
         state.set('fieldsErrors', Map());
         state.set('hasChanged', true);
-        state.set('lastChangeMilli',Date.now())
+        state.set('lastChangedMilli',Date.now())
         state.set('key', uuid());
       });
     case DRAFT_CREATE_DUPLICATE_FROM_ENTRY:
@@ -90,7 +90,7 @@ function entryDraftReducer(state = Map(), action) {
         state.set('fieldsMetaData', Map());
         state.set('fieldsErrors', Map());
         state.set('hasChanged', true);
-        state.set('lastChangeMilli',Date.now())
+        state.set('lastChangedMilli',Date.now())
       });
     case DRAFT_DISCARD:
       return initialState;
@@ -149,7 +149,7 @@ function entryDraftReducer(state = Map(), action) {
            Otherwise, set to -1.
         */
         state.set('lastChangedMilli', changedSinceSave ? Date.now() : -1) 
-        // alert(state.get('lastChangeMilli'))
+        // alert(state.get('lastChangedMilli'))
       });
     }
     case DRAFT_VALIDATION_ERRORS:
