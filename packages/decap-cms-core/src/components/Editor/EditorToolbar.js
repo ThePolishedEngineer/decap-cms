@@ -20,6 +20,8 @@ import {
 import { status } from '../../constants/publishModes';
 import { SettingsDropdown } from '../UI';
 
+const saveLag = 3000; //(ms) desired delay between last change and attempted autosave
+
 const styles = {
   noOverflow: css`
     overflow: hidden;
@@ -279,6 +281,14 @@ export class EditorToolbar extends React.Component {
     t: PropTypes.func.isRequired,
     editorBackLink: PropTypes.string.isRequired,
   };
+
+  constructor() {
+    super();
+    setInterval(() => {
+      console.log("Checking for Autosave")
+      this.autoSave();
+    }, 1000);
+  }
 
   componentDidMount() {
     const { isNewEntry, loadDeployPreview } = this.props;
@@ -681,6 +691,18 @@ export class EditorToolbar extends React.Component {
       </ToolbarContainer>
     );
   }
+
+  autoSave = () => {
+    const { hasChanged, lastChangedMilli, onPersist } = this.props;
+    if (hasChanged) {
+      const currentLag = Date.now() - lastChangedMilli;
+      if (currentLag >= saveLag) { 
+        console.log("Maybe Gonna Save")
+        hasChanged && onPersist()
+        };
+      return
+    }
+  };
 }
 
 export default translate()(EditorToolbar);
