@@ -20,7 +20,14 @@ import {
 import { status } from '../../constants/publishModes';
 import { SettingsDropdown } from '../UI';
 
-const saveLag = 3000; //(ms) desired delay between last change and attempted autosave
+let saveLag = 10000 ; //(ms) desired delay between last change and attempted autosave.
+/* saveLag initialized to 10 seconds to allow user time to fill in fields without
+being spammed with toast errors
+*/
+let nextSaveTime = Date.now() + saveLag; // (ms since epoch) time to attempt to save
+let saveAttempted = false;
+let unsaved = true;
+
 
 const styles = {
   noOverflow: css`
@@ -694,12 +701,42 @@ export class EditorToolbar extends React.Component {
 
   autoSave = () => {
     const { hasChanged, lastChangedMilli, onPersist } = this.props;
-    if (hasChanged) {
-      const currentLag = Date.now() - lastChangedMilli;
-      if (currentLag >= saveLag) { 
+    const currentTime = Date.now()
+    
+    console.log(hasChanged)
+    if (unsaved) {
+      console.log("unsaved!")
+      if (saveAttempted) { // Second run of autoSave
+        console.log("save was attempted last time")
+        if (!hasChanged) { // hasChanged reset! Save succeeded!
+          console.log("success!  No change since save!")
+          unsaved = false
+          saveLag = 3000
+        }
+        saveAttempted = false
+      }
+      nextSaveTime = Math.max(nextSaveTime, lastChangedMilli+saveLag)
+    }
+    
+    if (hasChanged) { // changes made
+      // const currentLag = Date.now() - lastChangedMilli;
+      // if (currentLag >= saveLag) { 
+      if (currentTime > nextSaveTime) { 
+        // it's time to save
         console.log("Maybe Gonna Save")
-        hasChanged && onPersist()
-        };
+        hasChanged && onPersist() // try saving
+        saveAttempted = true // set SaveAttempted
+        nextSaveTime = currentTime + saveLag // set the next time to attempt to save
+      } else {
+        saveAttempted = false
+        if (!unsaved) {nextSaveTime = lastChangedMilli + saveLag}
+      }
+    } else { // no changes made
+      /* keep pushing the next save time back
+      so that if the next change is made after a long time
+      it doesn't immediately try to save
+      */
+      nextSaveTime = currentTime + saveLag
       return
     }
   };
